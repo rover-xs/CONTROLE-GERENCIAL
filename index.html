@@ -321,8 +321,6 @@
         <input type="text" id="produtos" list="produtosDatalist" placeholder="Comece a digitar para ver sugestões..." autocomplete="off">
 
         <div class="conditional" id="condVenda">
-          <label for="valor">Valor da venda (R$)</label>
-          <input type="text" id="valor" inputmode="decimal" placeholder="R$ 0,00">
           <label for="pagamento">Forma de pagamento</label>
           <select id="pagamento">
             <option value="">Selecione</option>
@@ -331,11 +329,19 @@
             <option>Pix</option>
             <option>Misto</option>
           </select>
+          <label for="valor">Valor da venda (R$)</label>
+          <input type="text" id="valor" inputmode="decimal" placeholder="R$ 0,00">
 
           <div class="conditional" id="condMisto" style="margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);">
             <div id="mistoRows"></div>
             <button type="button" class="misto-add-btn" onclick="addMistoRow()">+ Adicionar outra forma</button>
           </div>
+        </div>
+
+                <div class="conditional" id="condNaoTemos" style="margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);">
+          <label style="margin-top:0;">Dados do Cliente <span>(Opcional)</span></label>
+          <input type="text" id="clienteNome" placeholder="Nome do cliente" style="margin-bottom:8px;">
+          <input type="text" id="clienteNumero" placeholder="Número de contato">
         </div>
 
         <label for="obs">Observações</label>
@@ -385,7 +391,7 @@
         </div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Data</th><th>Hora</th><th>Vendedor</th><th>Resultado</th><th>Produtos</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead>
+            <thead><tr><th>Data</th><th>Hora</th><th>Vendedor</th><th>Resultado</th><th>Produtos</th><th>Cliente</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -547,7 +553,7 @@
       <p class="sub">Tem certeza? Essa ação <strong>não pode ser desfeita</strong>.</p>
       <div class="modal-actions">
         <button type="button" class="secondary" onclick="closeResetModal()">Cancelar</button>
-        <button type="button" class="danger-btn" onclick="executarResetDoMes()">Sim, resetar tudo</button>
+        <button type="button" class="danger-btn" onclick="executarResetDoMes().catch(console.error)">Sim, resetar tudo</button>
       </div>
     </div>
   </div>
@@ -621,6 +627,7 @@ window.firebaseConfig = {
         id: Number(d.id), vendedor: v.vendedor, resultado: v.resultado,
         produtos: v.produtos || '', pagamento: v.pagamento || '', valor: v.valor || 0,
         obs: v.obs || '', time: new Date(v.time),
+        clienteNome: v.clienteNome || '', clienteNumero: v.clienteNumero || '',
       });
     });
 
@@ -653,6 +660,7 @@ window.firebaseConfig = {
     db.collection('atendimentos').doc(String(rec.id)).set({
       vendedor: rec.vendedor, resultado: rec.resultado, produtos: rec.produtos,
       pagamento: rec.pagamento, valor: rec.valor, obs: rec.obs, time: rec.time.getTime(),
+      clienteNome: rec.clienteNome || '', clienteNumero: rec.clienteNumero || '',
     }).catch(err => console.error('Erro ao salvar atendimento no Firestore:', err));
   }
 
@@ -869,8 +877,13 @@ const PAG_COLORS = { "Dinheiro": COLORS.success, "Cartão": COLORS.warning, "Pix
 const RESULTADO_COLOR = { ok:COLORS.success, bad:COLORS.danger, mid:COLORS.warning, neu:COLORS.neutral };
 
 $('resultado').addEventListener('change', (e) => {
-  const isVenda = e.target.value === 'VENDEU';
+  const res = e.target.value;
+  const isVenda = res === 'VENDEU';
+  const isNaoTemos = res === 'NAO_TEMOS';
+  
   $('condVenda').classList.toggle('show', isVenda);
+  $('condNaoTemos').classList.toggle('show', isNaoTemos);
+  
   $('produtosVenda').style.display = isVenda ? 'block' : 'none';
   $('produtos').style.display = isVenda ? 'none' : 'block';
   if (isVenda) $('produtos').value = ''; else $('produtosVenda').value = '';
@@ -960,6 +973,8 @@ function registerAtendimento(){
   if (!resultado){ showMsg('formMsg', 'Selecione o resultado do atendimento.', false); return; }
 
   const isVenda = resultado === 'VENDEU';
+  const clienteNome = $('clienteNome').value.trim();
+  const clienteNumero = $('clienteNumero').value.trim();
   let valor = isVenda ? currencyValue($('valor')) : 0;
   let pagamento = isVenda ? $('pagamento').value : '';
   const produtos = isVenda ? $('produtosVenda').value : $('produtos').value.trim();
@@ -989,6 +1004,7 @@ function registerAtendimento(){
   const novoRegistro = {
     id: idSeq++, time: new Date(), vendedor, resultado,
     produtos, valor, pagamento, obs: $('obs').value.trim(),
+    clienteNome, clienteNumero,
     valorDinheiroMisto: valorDinheiroMisto > 0 ? valorDinheiroMisto : undefined
   };
   records.unshift(novoRegistro);
@@ -1007,6 +1023,9 @@ function registerAtendimento(){
   $('mistoRows').innerHTML = '';
   $('obs').value = '';
   $('condVenda').classList.remove('show');
+  $('condNaoTemos').classList.remove('show');
+  $('clienteNome').value = '';
+  $('clienteNumero').value = '';
 
   showMsg('formMsg', 'Atendimento registrado.', true);
   refreshVendorFilterOptions();
@@ -1052,7 +1071,7 @@ function getFiltered(){
     if (fv && r.vendedor !== fv) return false;
     if (fr && r.resultado !== fr) return false;
     if (fp && r.pagamento !== fp) return false;
-    if (fb && !r.produtos.toLowerCase().includes(fb) && !r.obs.toLowerCase().includes(fb)) return false;
+    if (fb && !r.produtos.toLowerCase().includes(fb) && !r.obs.toLowerCase().includes(fb) && !(r.clienteNome||'').toLowerCase().includes(fb) && !(r.clienteNumero||'').toLowerCase().includes(fb)) return false;
     const rk = dateKey(r.time);
     if (filtroAteHoje){
       const inicioMes = dateKey(new Date(YEAR, MONTH, 1));
@@ -1069,15 +1088,18 @@ function renderTable(){
   const rows = getFiltered();
   const tbody = $('tbody');
   if (rows.length === 0){
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">Nenhum atendimento encontrado com os filtros atuais.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">Nenhum atendimento encontrado com os filtros atuais.</td></tr>`;
     return;
   }
   tbody.innerHTML = rows.map(r => {
     const res = RESULTADOS[r.resultado] || { label: r.resultado, cls: 'neu' };
+    const clienteInfo = [r.clienteNome, r.clienteNumero].filter(Boolean).join(' - ');
     return `<tr>
       <td>${fmtDate(r.time)}</td><td>${fmtTime(r.time)}</td><td>${r.vendedor}</td>
       <td><span class="badge ${res.cls}">${res.label}</span></td>
-      <td>${r.produtos || '—'}</td><td>${r.pagamento || '—'}</td>
+      <td>${r.produtos || '—'}</td>
+      <td>${clienteInfo || '—'}</td>
+      <td>${r.pagamento || '—'}</td>
       <td class="val-cell">${r.valor ? fmtMoney(r.valor) : '—'}</td>
       <td><button class="rm-btn" onclick="removeRecord(${r.id})">remover</button></td>
     </tr>`;
@@ -1272,7 +1294,7 @@ function removeCaixa(id){
 function renderCaixa(){
   const tbody = $('tbodyCaixa');
   if (caixaEntries.length === 0){
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">Nenhum fechamento registrado ainda.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">Nenhum fechamento registrado ainda.</td></tr>`;
   } else {
     tbody.innerHTML = caixaEntries.map(c => {
       const diff = c.gaveta - c.sistema;
@@ -1560,10 +1582,14 @@ function checkResetPassword(){
   $('resetStep2').style.display = 'block';
 }
 
-function executarResetDoMes(){
+async function executarResetDoMes(){
   if (window.cloud){
-    records.forEach(r => window.cloud.deleteAtendimento(r.id));
-    caixaEntries.forEach(c => window.cloud.deleteCaixa(c.id));
+    // Aguarda todas as deleções terminarem antes de limpar o estado local
+    const promises = [
+      ...records.map(r => window.cloud.deleteAtendimento(r.id)),
+      ...caixaEntries.map(c => window.cloud.deleteCaixa(c.id))
+    ];
+    await Promise.all(promises);
   }
 
   records = [];
@@ -1601,13 +1627,14 @@ async function bootstrap(){
     try {
       const cloudData = await window.cloud.loadAll();
       if (cloudData){
-        if (cloudData.records.length) records = cloudData.records;
+        // Substitui os dados locais/seeds pelos dados do Firestore (mesmo que vazios)
+        records = cloudData.records;
         if (cloudData.sellers.length){
           sellers = cloudData.sellers;
           metas = cloudData.metas;
           escala = cloudData.escala;
         }
-        if (cloudData.caixaEntries.length) caixaEntries = cloudData.caixaEntries;
+        caixaEntries = cloudData.caixaEntries;
         if (cloudData.metaLoja) metaLoja = cloudData.metaLoja;
         idSeq = 1 + records.reduce((m,r) => Math.max(m, r.id||0), 0);
         cxIdSeq = 1 + caixaEntries.reduce((m,c) => Math.max(m, c.id||0), 0);
