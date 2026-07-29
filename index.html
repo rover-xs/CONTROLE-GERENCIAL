@@ -44,7 +44,7 @@
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg); color:var(--ink); font-family:var(--sans);
-    padding: 0 0 60px; min-height:100vh; font-size:14px;
+    padding: 180px 0 60px; min-height:100vh; font-size:14px;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -52,8 +52,9 @@
   .topbar{
     background:linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
     padding: 0;
-    margin-bottom: 28px;
+    margin-bottom: 0;
     border-bottom: 1px solid var(--navy-3);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   }
   .topbar-inner{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; padding: 22px 0; }
   .brand{ display:flex; align-items:center; gap:14px; }
@@ -69,7 +70,7 @@
 
   .stat-strip{ display:flex; gap:10px; flex-wrap:wrap; }
   .reset-month-btn{
-    background:transparent; border:1px solid var(--navy-3); color:#B7BEDA;
+    background:transparent; border:1px solid rgba(220, 38, 38, 0.4); color:#B7BEDA; margin-right: 20px;
     font-size:11.5px; font-weight:600; padding:8px 12px; border-radius:9px; cursor:pointer;
     white-space:nowrap; transition:all .12s ease; flex-shrink:0;
   }
@@ -82,10 +83,10 @@
   .stat-chip .l{ font-size:10px; color:#8A93B0; text-transform:uppercase; letter-spacing:.07em; margin-top:3px; font-weight:600; }
 
   /* ---------- TABS ---------- */
-  .tabs{ display:flex; gap:4px; background:var(--surface); padding:5px; border-radius:var(--radius); width:fit-content; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+  .tabs{ display:flex; gap:4px; background:var(--surface); padding:5px; border-radius:var(--radius); width:100%; max-width: 1200px; border:1px solid var(--border); box-shadow:var(--shadow-sm); position: fixed; top: 105px; left: 50%; transform: translateX(-50%); z-index: 99; }
   .tab-btn{
     font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink-soft);
-    background:none; border:none; padding:9px 18px; border-radius:8px; cursor:pointer; transition: all .18s ease;
+    background:none; border:none; padding:9px 18px; border-radius:8px; cursor:pointer; transition: all .18s ease; flex: 1;
   }
   .tab-btn.active{ background:var(--navy); color:#fff; box-shadow:var(--shadow); }
   .tab-btn:hover:not(.active){ color:var(--ink); background:var(--neutral-bg); }
@@ -95,6 +96,7 @@
 
   /* ---------- PANELS / CARDS ---------- */
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); }
+  .panel-registros{ background: var(--surface); border-color: var(--border); }
   .panel + .panel{ margin-top: 18px; }
   .panel h2{ font-size:15px; letter-spacing:-0.01em; margin:0 0 4px; font-weight:700; }
   .panel .sub{ font-size:12.5px; color:var(--ink-soft); margin:0 0 20px; }
@@ -135,14 +137,38 @@
   .filters label{ margin:0 0 4px; font-size:10.5px; }
   .filter-clear{ padding:9px 14px; font-size:12px; }
 
-  .table-scroll{ overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); }
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
-  thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); border-bottom:1px solid var(--border); padding: 12px 12px; white-space:nowrap; font-weight:700; background:var(--surface-2); }
-  tbody td{ padding:11px 12px; border-bottom:1px solid var(--bg); vertical-align:middle; }
-  tbody tr:last-child td{ border-bottom:none; }
-  tbody tr:hover{ background: var(--surface-2); }
-  .table-compact thead th{ padding:7px 12px; }
-  .table-compact tbody td{ padding:4px 12px; }
+  
+  table { width:100%; border-collapse:separate; border-spacing: 0; font-size:13px; }
+  thead th { 
+    text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; 
+    color:var(--ink-faint); border-bottom:2px solid var(--border); padding: 12px 12px; 
+    white-space:nowrap; font-weight:700; background:var(--surface-2);
+  }
+  tbody td { 
+    padding:14px 12px; border-bottom:1px solid var(--border); vertical-align:middle; 
+    background: var(--surface);
+  }
+  /* Efeito Zebra: cores alternadas para distinguir linhas */
+  tbody tr:nth-child(even) td { background: #fafbfc; }
+  
+  /* Destaque ao passar o mouse */
+  tbody tr:hover td { background: #f0f4ff !important; }
+  
+  /* Borda lateral sutil para indicar o status do atendimento */
+  .status-indicator { width: 4px; padding: 0 !important; }
+  
+  .table-scroll { 
+    overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+  }
+
+  
+  
+  
+  
+  
+  .table-compact 
+  .table-compact 
   .table-compact .mini-input{ padding:5px 9px; }
   .badge{ display:inline-block; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:600; white-space:nowrap; }
   .badge.ok{ background:var(--success-bg); color:var(--success); }
@@ -175,9 +201,9 @@
      assim dá pra escanear uma coluna (um dia) e ver quem está de folga naquele dia. */
   .escala-wrap{ border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; background:var(--surface); }
   .escala-table-wrap{ overflow-x:auto; }
-  .escala-table{ width:100%; border-collapse:collapse; font-size:12px; }
+  .escala-
   .escala-table col-vendedor-spacer{ width:132px; }
-  .escala-table thead th{ padding:16px 2px 9px; font-size:10.5px; font-weight:700; color:var(--ink-faint); text-align:center; background:var(--surface-2); border-bottom:1px solid var(--border); white-space:nowrap; vertical-align:bottom; text-transform:none; }
+  .escala-table 
   .escala-table thead th.col-vendedor{ text-align:left; padding-left:14px; }
   .escala-table th.col-vendedor, .escala-table td.col-vendedor{
     position:sticky; left:0; min-width:132px; z-index:3; background:var(--surface-2);
@@ -190,7 +216,7 @@
   .escala-table th.col-day.today{ color:var(--primary); }
   .escala-table tbody tr{ border-bottom:1px solid var(--bg); transition:background .12s; }
   .escala-table tbody tr:last-of-type{ border-bottom:none; }
-  .escala-table tbody tr:hover{ background:var(--surface-2); }
+  .escala-table 
   .escala-vendor-cell{ display:flex; flex-direction:column; gap:2px; padding:9px 10px 9px 0; }
   .escala-vendor-cell .nm{ font-weight:700; font-size:12.5px; }
   .escala-vendor-cell .stats{ display:flex; flex-direction:column; gap:0; font-size:9.5px; font-weight:700; line-height:1.4; white-space:nowrap; }
@@ -250,6 +276,13 @@
   .misto-add-btn { width: 100%; margin-top: 5px; font-size: 12px; padding: 6px; background: var(--surface-2); border: 1px dashed var(--border-strong); color: var(--ink-soft); cursor: pointer; border-radius: var(--radius-sm); font-weight: 600; }
   .misto-add-btn:hover { background: var(--neutral-bg); color: var(--ink); }
 
+  
+  .action-btn { background:none; border:none; cursor:pointer; padding:4px; border-radius:4px; transition:background 0.2s; display:inline-flex; align-items:center; justify-content:center; }
+  .action-btn:hover { background: rgba(0,0,0,0.05); }
+  .btn-edit { color: #3b82f6; }
+  .btn-delete { color: #ef4444; }
+  .icon-svg { width: 16px; height: 16px; fill: currentColor; }
+
   /* Toast de feedback (substitui alert()) */
   .toast{
     position:fixed; bottom:24px; right:24px; left:auto; max-width:calc(100% - 48px);
@@ -283,7 +316,7 @@
 </div>
 
 <div class="wrap">
-  <div class="tabs" style="margin-bottom:22px;">
+  <div class="tabs">
     <button class="tab-btn active" data-tab="atendimento" onclick="switchTab('atendimento')">Atendimento</button>
     <button class="tab-btn" data-tab="metas" onclick="switchTab('metas')">Metas &amp; Projeções</button>
     <button class="tab-btn" data-tab="caixa" onclick="switchTab('caixa')">Caixa</button>
@@ -351,7 +384,7 @@
         <div class="form-msg" id="formMsg"></div>
       </div>
 
-      <div class="panel">
+      <div class="panel panel-registros">
         <h2>Atendimentos registrados</h2>
         <p class="sub">Filtre por data, vendedor, resultado ou forma de pagamento.</p>
         <div class="filters">
@@ -391,7 +424,7 @@
         </div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Data</th><th>Hora</th><th>Vendedor</th><th>Resultado</th><th>Produtos</th><th>Cliente</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead>
+            <thead><tr><th class="status-indicator"></th><th>Data</th><th>Hora</th><th>Vendedor</th><th>Resultado</th><th>Produtos</th><th>Cliente</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -759,6 +792,7 @@ Object.keys(SEED_ESCALA).forEach(nome => {
   SEED_ESCALA[nome].forEach((v, idx) => { if (idx < DAYS_IN_MONTH) escala[nome][idx] = !!v; });
 });
 let idSeq = 1;
+let editingAtendimentoId = null;
 SEED_ATENDIMENTOS.forEach(r => {
   records.push({
     id: idSeq++,
@@ -1001,14 +1035,31 @@ function registerAtendimento(){
     }
   }
 
-  const novoRegistro = {
-    id: idSeq++, time: new Date(), vendedor, resultado,
-    produtos, valor, pagamento, obs: $('obs').value.trim(),
-    clienteNome, clienteNumero,
-    valorDinheiroMisto: valorDinheiroMisto > 0 ? valorDinheiroMisto : undefined
-  };
-  records.unshift(novoRegistro);
-  if (window.cloud) window.cloud.saveAtendimento(novoRegistro);
+  if (editingAtendimentoId !== null) {
+    const idx = records.findIndex(r => r.id === editingAtendimentoId);
+    if (idx !== -1) {
+      records[idx] = { 
+        ...records[idx], vendedor, resultado, produtos, valor, pagamento, 
+        obs: $('obs').value.trim(), clienteNome, clienteNumero,
+        valorDinheiroMisto: valorDinheiroMisto > 0 ? valorDinheiroMisto : undefined
+      };
+      if (window.cloud) window.cloud.saveAtendimento(records[idx]);
+    }
+    editingAtendimentoId = null;
+    const btn = document.querySelector('button[onclick="registerAtendimento()"]');
+    btn.textContent = 'Registrar atendimento';
+    btn.style.background = ''; btn.style.color = '';
+    btn.classList.replace('secondary', 'primary');
+  } else {
+    const novoRegistro = {
+      id: idSeq++, time: new Date(), vendedor, resultado,
+      produtos, valor, pagamento, obs: $('obs').value.trim(),
+      clienteNome, clienteNumero,
+      valorDinheiroMisto: valorDinheiroMisto > 0 ? valorDinheiroMisto : undefined
+    };
+    records.unshift(novoRegistro);
+    if (window.cloud) window.cloud.saveAtendimento(novoRegistro);
+  }
 
   $('vendedor').value = '';
   $('resultado').value = '';
@@ -1033,7 +1084,59 @@ function registerAtendimento(){
   renderAll();
 }
 
+
+function editAtendimento(id) {
+  const r = records.find(rec => rec.id === id);
+  if (!r) return;
+  
+  editingAtendimentoId = id;
+  $('vendedor').value = r.vendedor;
+  $('resultado').value = r.resultado;
+  
+  // Dispara o evento change para mostrar os campos condicionais
+  $('resultado').dispatchEvent(new Event('change'));
+  
+  if (r.resultado === 'VENDEU') {
+    $('produtosVenda').value = r.produtos;
+    $('pagamento').value = r.pagamento.startsWith('Misto') ? 'Misto' : r.pagamento;
+    $('pagamento').dispatchEvent(new Event('change'));
+    
+    if (r.pagamento.startsWith('Misto')) {
+      // Para simplificar a edição de misto, mantemos o valor total mas limpamos as linhas
+      // O usuário pode re-adicionar se necessário ou apenas mudar o valor total se não for read-only
+      $('valor').value = centsToBRL(r.valor * 100);
+    } else {
+      $('valor').value = centsToBRL(r.valor * 100);
+    }
+  } else {
+    $('produtos').value = r.produtos;
+    if (r.resultado === 'NAO_TEMOS') {
+      $('clienteNome').value = r.clienteNome || '';
+      $('clienteNumero').value = r.clienteNumero || '';
+    }
+  }
+  
+  $('obs').value = r.obs || '';
+  
+  const btn = document.querySelector('button[onclick="registerAtendimento()"]');
+  btn.textContent = 'Salvar Alterações';
+  btn.classList.replace('primary', 'secondary');
+  btn.style.background = 'var(--primary)';
+  btn.style.color = '#fff';
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function removeRecord(id){
+  if (!confirm('Tem certeza que deseja excluir este registro?')) return;
+  if (window.cloud) window.cloud.deleteAtendimento(id);
+  records = records.filter(r => r.id !== id);
+  renderAll();
+  showToast('Registro removido.');
+}
+
+/* Antiga removeRecord substituída */
+function _old_removeRecord(id){
   if (window.cloud) window.cloud.deleteAtendimento(id);
   records = records.filter(r => r.id !== id);
   renderAll();
@@ -1088,20 +1191,25 @@ function renderTable(){
   const rows = getFiltered();
   const tbody = $('tbody');
   if (rows.length === 0){
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">Nenhum atendimento encontrado com os filtros atuais.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">Nenhum atendimento encontrado com os filtros atuais.</td></tr>`;
     return;
   }
   tbody.innerHTML = rows.map(r => {
     const res = RESULTADOS[r.resultado] || { label: r.resultado, cls: 'neu' };
     const clienteInfo = [r.clienteNome, r.clienteNumero].filter(Boolean).join(' - ');
+    const statusColor = RESULTADO_COLOR[res.cls] || 'transparent';
     return `<tr>
+      <td class="status-indicator" style="background-color: ${statusColor};"></td>
       <td>${fmtDate(r.time)}</td><td>${fmtTime(r.time)}</td><td>${r.vendedor}</td>
       <td><span class="badge ${res.cls}">${res.label}</span></td>
       <td>${r.produtos || '—'}</td>
       <td>${clienteInfo || '—'}</td>
       <td>${r.pagamento || '—'}</td>
       <td class="val-cell">${r.valor ? fmtMoney(r.valor) : '—'}</td>
-      <td><button class="rm-btn" onclick="removeRecord(${r.id})">remover</button></td>
+      <td style="white-space:nowrap; text-align:right;">
+        <button class="action-btn btn-edit" onclick="editAtendimento(${r.id})" title="Editar"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+        <button class="action-btn btn-delete" onclick="removeRecord(${r.id})" title="Excluir"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1294,7 +1402,7 @@ function removeCaixa(id){
 function renderCaixa(){
   const tbody = $('tbodyCaixa');
   if (caixaEntries.length === 0){
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">Nenhum fechamento registrado ainda.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">Nenhum fechamento registrado ainda.</td></tr>`;
   } else {
     tbody.innerHTML = caixaEntries.map(c => {
       const diff = c.gaveta - c.sistema;
