@@ -206,29 +206,29 @@
   .escala-table 
   .escala-table thead th.col-vendedor{ text-align:left; padding-left:14px; }
   .escala-table th.col-vendedor, .escala-table td.col-vendedor{
-    position:sticky; left:0; min-width:132px; z-index:3; background:var(--surface-2);
+    position:sticky; left:0; min-width:110px; z-index:3; background:var(--surface-2);
     box-shadow: 1px 0 0 var(--border);
   }
   .escala-table tbody td.col-vendedor{ background:var(--surface); z-index:2; }
   .escala-table tbody tr:hover td.col-vendedor{ background:var(--surface-2); }
-  .escala-table th.col-day{ min-width:28px; }
+  .escala-table th.col-day{ min-width:22px; font-size: 10px; }
   .escala-table th.col-day.weekend{ background:var(--weekend-bg); }
   .escala-table th.col-day.today{ color:var(--primary); }
   .escala-table tbody tr{ border-bottom:1px solid var(--bg); transition:background .12s; }
   .escala-table tbody tr:last-of-type{ border-bottom:none; }
   .escala-table 
-  .escala-vendor-cell{ display:flex; flex-direction:column; gap:2px; padding:9px 10px 9px 0; }
-  .escala-vendor-cell .nm{ font-weight:700; font-size:12.5px; }
+  .escala-vendor-cell{ display:flex; flex-direction:column; gap:1px; padding:6px 8px 6px 0; }
+  .escala-vendor-cell .nm{ font-weight:700; font-size:11px; }
   .escala-vendor-cell .stats{ display:flex; flex-direction:column; gap:0; font-size:9.5px; font-weight:700; line-height:1.4; white-space:nowrap; }
   .escala-vendor-cell .stats .worked{ color:var(--ink-soft); }
   .escala-vendor-cell .stats .off{ color:var(--danger); }
   .escala-vendor-cell .stats .sofar{ color:var(--success); }
-  .escala-day-cell{ padding:5px 2px; text-align:center; }
+  .escala-day-cell{ padding:3px 1px; text-align:center; }
   .escala-day-cell.weekend{ background:var(--weekend-bg); }
   .escala-day-toggle{
-    display:flex; align-items:center; justify-content:center; width:24px; height:24px; margin:0 auto;
-    border-radius:6px; cursor:pointer; background:var(--neutral-bg); border:1px solid transparent;
-    font-family:var(--sans); font-size:10.5px; font-weight:700; color:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center; width:20px; height:20px; margin:0 auto;
+    border-radius:4px; cursor:pointer; background:var(--neutral-bg); border:1px solid transparent;
+    font-family:var(--sans); font-size:9px; font-weight:700; color:var(--ink-soft);
     transition: all .12s ease; padding:0;
   }
   .escala-day-toggle.weekend{ background:var(--bg); }
@@ -575,7 +575,7 @@
         <input type="text" id="novoVendedorEscala" placeholder="Nome do novo vendedor">
         <button type="button" class="secondary" onclick="addVendedor('novoVendedorEscala')">Adicionar vendedor</button>
       </div>      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px dashed var(--border);">
-        <div id="escalaImageContainer" style="margin-bottom:12px; display:none; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); box-shadow: var(--shadow-sm);">
+        <div id="escalaImageContainer" style="margin-bottom:12px; display:none; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); box-shadow: var(--shadow-sm); max-width: 600px;">
           <img id="escalaImgDisplay" style="width:100%; display:block;">
         </div>
         <div style="display:flex; align-items:center; justify-content: space-between;">
