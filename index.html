@@ -390,8 +390,7 @@
           <input type="text" id="clienteNumero" placeholder="Número de contato">
         </div>
 
-        <label for="obs">Observações</label>
-        <textarea id="obs" rows="2" placeholder="Opcional"></textarea>
+
 
         <button type="button" class="primary" onclick="registerAtendimento()">Registrar atendimento</button>
         <div class="form-msg" id="formMsg"></div>
@@ -424,7 +423,7 @@
           </div>
           <div>
             <label>Buscar produto</label>
-            <input type="text" id="fBusca" name="filtro-produto-busca" list="fBuscaDatalist" placeholder="Buscar..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+            <input type="search" id="fBusca" name="search_products" list="fBuscaDatalist" placeholder="Buscar..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
           </div>
           <div class="date-row">
             <div>
@@ -532,8 +531,7 @@
         <input type="text" id="cxGaveta" inputmode="decimal" placeholder="R$ 0,00">
         <label for="cxSistema">Fundo de caixa no sistema (R$) <span>— automático</span></label>
         <input type="text" id="cxSistema" inputmode="decimal" readonly>
-        <label for="cxObs">Observações</label>
-        <textarea id="cxObs" rows="2" placeholder="Opcional"></textarea>
+
         <button type="button" class="primary" id="cxSubmitBtn" onclick="registerCaixa()">Registrar fechamento</button>
         <button type="button" class="secondary" id="cxCancelBtn" onclick="cancelEditCaixa()" style="display:none; margin-top:8px; width:100%;">Cancelar edição</button>
         <div class="form-msg" id="cxMsg"></div>
@@ -1074,7 +1072,7 @@ function registerAtendimento(){
     if (idx !== -1) {
       records[idx] = { 
         ...records[idx], vendedor, resultado, produtos, valor, pagamento, 
-        obs: $('obs').value.trim(), clienteNome, clienteNumero,
+        obs: '', clienteNome, clienteNumero,
         valorDinheiroMisto: valorDinheiroMisto > 0 ? valorDinheiroMisto : undefined
       };
       if (window.cloud) window.cloud.saveAtendimento(records[idx]);
@@ -1087,7 +1085,7 @@ function registerAtendimento(){
   } else {
     const novoRegistro = {
       id: idSeq++, time: new Date(), vendedor, resultado,
-      produtos, valor, pagamento, obs: $('obs').value.trim(),
+      produtos, valor, pagamento, obs: '',
       clienteNome, clienteNumero,
       valorDinheiroMisto: valorDinheiroMisto > 0 ? valorDinheiroMisto : undefined
     };
@@ -1378,7 +1376,7 @@ function registerCaixa(){
   const saida = currencyValue($('cxSaida'));
   const gaveta = currencyValue($('cxGaveta'));
   const sistema = currencyValue($('cxSistema'));
-  const obs = $('cxObs').value.trim();
+  const obs = '';
 
   if (editingCaixaId){
     const entry = caixaEntries.find(c => c.id === editingCaixaId);
@@ -1392,7 +1390,7 @@ function registerCaixa(){
     if (window.cloud) window.cloud.saveCaixa(novoFechamento);
     $('cxSaida').value = centsToBRL(0);
     $('cxGaveta').value = centsToBRL(0);
-    $('cxObs').value = '';
+
     recalcCaixaAuto();
     showMsg('cxMsg', 'Fechamento registrado.', true);
   }
@@ -1406,7 +1404,7 @@ function editCaixa(id){
   $('cxData').value = entry.data;
   $('cxSaida').value = centsToBRL(entry.saida * 100);
   $('cxGaveta').value = centsToBRL(entry.gaveta * 100);
-  $('cxObs').value = entry.obs;
+
   recalcCaixaAuto();
   $('cxSubmitBtn').textContent = 'Salvar alterações';
   $('cxCancelBtn').style.display = 'block';
@@ -1831,37 +1829,89 @@ bootstrap();
 function exportCaixaPDF() {
   const element = document.getElementById('tab-caixa');
   
-  // Identifica os painéis e elementos para ocultar
-  const formPanel = element.querySelector('.panel:first-child'); // Formulário de fechamento
-  const chartBox = element.querySelector('.chart-box'); // Gráfico
-  const buttons = element.querySelectorAll('button');
+  // Criar um container temporário para o PDF para não bagunçar a UI
+  const printContainer = document.createElement('div');
+  printContainer.style.padding = '20px';
+  printContainer.style.background = '#fff';
+  printContainer.style.color = '#000';
+  printContainer.style.fontFamily = 'Arial, sans-serif';
   
-  // Salva estados originais
-  const originalFormDisplay = formPanel.style.display;
-  const originalChartDisplay = chartBox.style.display;
+  // Header Profissional
+  const header = `
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #4F46E5; padding-bottom:10px; margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0; color:#4F46E5; font-size:24px;">RELATÓRIO DE FECHAMENTO DE CAIXA</h1>
+        <p style="margin:5px 0 0; color:#666; font-size:14px;">Controle Gerencial - Criamigos</p>
+      </div>
+      <div style="text-align:right; font-size:12px; color:#666;">
+        <p style="margin:0;">Emissão: ${new Date().toLocaleDateString('pt-BR')}</p>
+        <p style="margin:0;">Status: Mensal</p>
+      </div>
+    </div>
+  `;
   
-  // Oculta o que não deve aparecer no PDF
-  formPanel.style.display = 'none';
-  chartBox.style.display = 'none';
-  buttons.forEach(b => b.style.display = 'none');
+  // Clonar KPIs e Tabela
+  const kpis = element.querySelector('.kpis').cloneNode(true);
+  const table = element.querySelector('table').cloneNode(true);
   
+  // Ajustar estilos dos clones para o PDF
+  kpis.style.display = 'grid';
+  kpis.style.gridTemplateColumns = 'repeat(4, 1fr)';
+  kpis.style.gap = '15px';
+  kpis.style.marginBottom = '30px';
+  
+  const kpiItems = kpis.querySelectorAll('.kpi');
+  kpiItems.forEach(k => {
+    k.style.border = '1px solid #eee';
+    k.style.padding = '15px';
+    k.style.borderRadius = '8px';
+    k.style.background = '#f9fafb';
+  });
+
+  // Limpar a tabela de botões de ação
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    if (row.lastElementChild && (row.lastElementChild.tagName === 'TH' || row.lastElementChild.querySelector('button') || row.lastElementChild.classList.contains('rm-btn'))) {
+       row.lastElementChild.remove();
+    }
+  });
+
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  table.querySelectorAll('th, td').forEach(cell => {
+    cell.style.border = '1px solid #eee';
+    cell.style.padding = '10px';
+    cell.style.fontSize = '12px';
+  });
+  table.querySelector('thead').style.background = '#4F46E5';
+  table.querySelector('thead').style.color = '#fff';
+
+  printContainer.innerHTML = header;
+  printContainer.appendChild(kpis);
+  
+  const tableTitle = document.createElement('h2');
+  tableTitle.innerText = "Detalhamento Diário";
+  tableTitle.style.fontSize = '18px';
+  tableTitle.style.marginBottom = '10px';
+  tableTitle.style.color = '#333';
+  printContainer.appendChild(tableTitle);
+  printContainer.appendChild(table);
+
+  const footer = document.createElement('div');
+  footer.innerHTML = `<p style="text-align:center; font-size:10px; color:#999; margin-top:30px;">Gerado automaticamente pelo Sistema de Controle Gerencial</p>`;
+  printContainer.appendChild(footer);
+
+  // Opções do PDF
   const opt = {
     margin:       [10, 10],
-    filename:     'fechamento_caixa.pdf',
+    filename:     `fechamento_caixa_${new Date().toISOString().slice(0,7)}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
   };
   
-  html2pdf().set(opt).from(element).save().then(() => {
-    // Restaura tudo ao estado original
-    formPanel.style.display = originalFormDisplay;
-    chartBox.style.display = originalChartDisplay;
-    buttons.forEach(b => {
-      if (b.id !== 'cxCancelBtn') b.style.display = '';
-    });
-    if (editingCaixaId !== null) $('cxCancelBtn').style.display = '';
-  });
+  // Gerar PDF a partir do container temporário
+  html2pdf().set(opt).from(printContainer).save();
 }
 
 function handleEscalaUpload(event) {
