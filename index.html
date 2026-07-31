@@ -1104,7 +1104,7 @@ function registerAtendimento(){
   $('pagamento').value = '';
   $('condMisto').classList.remove('show');
   $('mistoRows').innerHTML = '';
-  $('obs').value = '';
+  // $('obs').value = ''; // Campo removido
   $('condVenda').classList.remove('show');
   $('condNaoTemos').classList.remove('show');
   $('clienteNome').value = '';
@@ -1148,7 +1148,7 @@ function editAtendimento(id) {
     }
   }
   
-  $('obs').value = r.obs || '';
+  // $('obs').value = r.obs || ''; // Campo removido
   
   const btn = document.querySelector('button[onclick="registerAtendimento()"]');
   btn.textContent = 'Salvar Alterações';
@@ -1206,7 +1206,7 @@ function getFiltered(){
     if (fv && r.vendedor !== fv) return false;
     if (fr && r.resultado !== fr) return false;
     if (fp && r.pagamento !== fp) return false;
-    if (fb && !r.produtos.toLowerCase().includes(fb) && !r.obs.toLowerCase().includes(fb) && !(r.clienteNome||'').toLowerCase().includes(fb) && !(r.clienteNumero||'').toLowerCase().includes(fb)) return false;
+    if (fb && !r.produtos.toLowerCase().includes(fb) && !(r.clienteNome||'').toLowerCase().includes(fb) && !(r.clienteNumero||'').toLowerCase().includes(fb)) return false;
     const rk = dateKey(r.time);
     if (filtroAteHoje){
       const inicioMes = dateKey(new Date(YEAR, MONTH, 1));
@@ -1232,7 +1232,9 @@ function renderTable(){
     const statusColor = RESULTADO_COLOR[res.cls] || 'transparent';
     return `<tr>
       <td class="status-indicator" style="background-color: ${statusColor};"></td>
-      <td>${fmtDate(r.time)}</td><td>${fmtTime(r.time)}</td><td>${r.vendedor}</td>
+      <td>${fmtDate(r.time)}</td>
+      <td>${fmtTime(r.time)}</td>
+      <td>${r.vendedor}</td>
       <td><span class="badge ${res.cls}">${res.label}</span></td>
       <td>${r.produtos || '—'}</td>
       <td>${clienteInfo || '—'}</td>
@@ -1801,7 +1803,7 @@ async function bootstrap(){
     $('fResultado').value = '';
     $('fPagamento').value = '';
     $('fBusca').value = '';
-    $('fDataInicio').value = dateKey(new Date()); // só a data começa preenchida, com o dia de hoje
+    $('fDataInicio').value = ''; // Mostrar todos por padrão
   }
   limparFiltrosDeAbertura();
   // alguns navegadores/gerenciadores de senha preenchem campos automaticamente
