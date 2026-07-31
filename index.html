@@ -601,25 +601,10 @@
 <div class="modal-overlay" id="resetModalOverlay">
   <div class="modal-box">
     <h3>Resetar dados do mês</h3>
-
-    <div id="resetStep1">
-      <p class="sub">Isso vai apagar todos os atendimentos, fechamentos de caixa e folgas, e zerar as metas para você cadastrar as do novo mês. Digite a senha para continuar.</p>
-      <input type="password" id="resetPasswordInput" placeholder="Senha" autocomplete="off" onkeydown="if(event.key==='Enter') checkResetPassword()">
-      <div class="modal-msg" id="resetMsg"></div>
-      <div class="modal-actions">
-        <button type="button" class="secondary" onclick="closeResetModal()">Cancelar</button>
-        <button type="button" class="primary" onclick="checkResetPassword()">Continuar</button>
-      </div>
-    </div>
-
-    <div id="resetStep2" style="display:none;">
-      <p class="sub">Tem certeza? Essa ação <strong>não pode ser desfeita</strong>.</p>
-      <div class="modal-actions">
-        <button type="button" class="secondary" onclick="closeResetModal()">Cancelar</button>
-        <button type="button" class="danger-btn" onclick="executarResetDoMes().catch(console.error)">Sim, resetar tudo</button>
-      </div>
-      
-
+    <p class="sub">Isso vai apagar todos os atendimentos, fechamentos de caixa e folgas, e zerar as metas. Tem certeza? Essa ação <strong>não pode ser desfeita</strong>.</p>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeResetModal()">Cancelar</button>
+      <button type="button" class="danger-btn" onclick="executarResetDoMes().catch(console.error)">Sim, resetar tudo</button>
     </div>
   </div>
 </div>
@@ -1705,27 +1690,7 @@ function setupLojaInput(id, obj, campo){
 }
 
 function resetarDadosDoMes(){
-  $('resetPasswordInput').value = '';
-  $('resetMsg').textContent = '';
-  $('resetStep1').style.display = 'block';
-  $('resetStep2').style.display = 'none';
   $('resetModalOverlay').classList.add('show');
-  setTimeout(() => $('resetPasswordInput').focus(), 50);
-}
-
-function closeResetModal(){
-  $('resetModalOverlay').classList.remove('show');
-}
-
-function checkResetPassword(){
-  const senha = $('resetPasswordInput').value;
-  if (senha !== '6693'){
-    $('resetMsg').textContent = 'Senha incorreta.';
-    $('resetPasswordInput').focus();
-    return;
-  }
-  $('resetStep1').style.display = 'none';
-  $('resetStep2').style.display = 'block';
 }
 
 async function executarResetDoMes(){
@@ -1761,9 +1726,17 @@ async function executarResetDoMes(){
   renderCaixa();
   recalcCaixaAuto();
   renderAll();
-
   closeResetModal();
-  showToast('Dados do mês resetados. Cadastre as novas metas em "Metas & Projeções".');
+  showToast('Dados resetados com sucesso.');
+}
+
+function closeResetModal(){
+  $('resetModalOverlay').classList.remove('show');
+}
+
+function checkResetPassword(){
+  // Função mantida por compatibilidade com o HTML antigo, mas não mais usada
+  executarResetDoMes().catch(console.error);
 }
 
 async function bootstrap(){
