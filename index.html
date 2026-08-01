@@ -456,9 +456,8 @@
   <div class="tab-panel" id="tab-metas">
 
     <div class="panel">
-      <h2>Meta da loja</h2>
-      <p class="sub">Meta geral do mês — todos os vendedores somados (100%).</p>
-      <label for="metaLojaOuro">Meta (100%)</label>
+      <h2>Meta da loja (100%)</h2>
+
       <input type="text" id="metaLojaOuro" inputmode="decimal">
     </div>
 
@@ -467,7 +466,7 @@
       <p class="sub">Vendido no mês, projeção pelo ritmo atual e diária necessária para cada meta.</p>
       <div class="kpis">
         <div class="kpi"><div class="n" id="lojaVendido">R$ 0</div><div class="l">Vendido no mês</div></div>
-        <div class="kpi"><div class="n" id="lojaProjecao">R$ 0</div><div class="l">Projeção (ritmo atual)</div></div>
+        <div class="kpi"><div class="n" id="lojaProjecao">R$ 0</div><div class="l">Projeção Mensal</div></div>
         <div class="kpi"><div class="n" id="lojaFalta">R$ 0</div><div class="l">Falta para a meta</div></div>
         <div class="kpi"><div class="n" id="lojaDiariaOuro">R$ 0</div><div class="l">Diária necessária</div></div>
       </div>
@@ -484,7 +483,7 @@
     </div>
 
     <div class="panel">
-      <h2>Vendido vs. meta ouro</h2>
+      <h2>Vendido vs Meta</h2>
       <p class="sub">Comparativo por vendedor com base nos atendimentos registrados.</p>
       <div class="chart-box tall"><canvas id="chartProjecao"></canvas></div>
     </div>
@@ -500,7 +499,7 @@
         <p class="sub">Diária necessária considera os dias restantes definidos na Escala.</p>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Vendedor</th><th>Vendido</th><th>Projeção (ritmo)</th><th>Falta para a meta</th><th>Dias rest.</th><th>Diária ouro</th></tr></thead>
+            <thead><tr><th>Vendedor</th><th>Vendido</th><th>Projeção Mensal</th><th>Falta para a meta</th><th>Dias rest.</th><th>Diária ouro</th></tr></thead>
             <tbody id="tbodyProjecao"></tbody>
           </table>
         </div>
@@ -552,7 +551,6 @@
             Download PDF
           </button>
         </div>
-        <p class="sub">Diferença = fundo na gaveta − fundo no sistema. Divergente quando ≠ 0.</p>
         <div class="kpis">
           <div class="kpi"><div class="n" id="cxKEntradas">R$ 0</div><div class="l">Total entradas</div></div>
           <div class="kpi"><div class="n" id="cxKSaidas">R$ 0</div><div class="l">Total saídas</div></div>
@@ -598,8 +596,6 @@
 
     </div>
   </div>
-
-  <footer>Controle gerencial · os dados ficam apenas nesta aba do navegador e são perdidos ao recarregar a página.</footer>
 </div>
 
 <datalist id="produtosDatalist"></datalist>
