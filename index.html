@@ -1200,7 +1200,15 @@ function getFiltered(){
   return records.filter(r => {
     if (fv && r.vendedor !== fv) return false;
     if (fr && r.resultado !== fr) return false;
-    if (fp && r.pagamento !== fp) return false;
+    if (fp) {
+      if (fp === 'Misto') {
+        if (!r.pagamento.startsWith('Misto')) return false;
+      } else {
+        const isExact = r.pagamento === fp;
+        const isIncludedInMisto = r.pagamento.startsWith('Misto') && r.pagamento.includes(fp);
+        if (!isExact && !isIncludedInMisto) return false;
+      }
+    }
     if (fb && !r.produtos.toLowerCase().includes(fb) && !(r.clienteNome||'').toLowerCase().includes(fb) && !(r.clienteNumero||'').toLowerCase().includes(fb)) return false;
     const rk = dateKey(r.time);
     if (filtroAteHoje){
@@ -1933,10 +1941,26 @@ function handleEscalaUpload(event) {
   
   const reader = new FileReader();
   reader.onload = function(e) {
-    const base64Data = e.target.result;
-    localStorage.setItem('escala_imagem_canvas', base64Data);
-    displayEscalaImage(base64Data);
-    showToast('Imagem da escala atualizada.');
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const targetWidth = 1000;
+      const scaleFactor = targetWidth / img.width;
+      const targetHeight = img.height * scaleFactor;
+      
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      
+      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+      
+      const base64Data = canvas.toDataURL('image/jpeg', 0.9);
+      localStorage.setItem('escala_imagem_canvas', base64Data);
+      displayEscalaImage(base64Data);
+      showToast('Imagem da escala atualizada e redimensionada para 1000px.');
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
