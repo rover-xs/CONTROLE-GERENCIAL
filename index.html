@@ -97,6 +97,8 @@
   /* ---------- PANELS / CARDS ---------- */
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); }
   .panel-registros{ background: var(--surface); border-color: var(--border); }
+  .panel-highlight{ background: #f8f9ff; border-color: var(--primary-bg); border-left: 4px solid var(--primary); }
+  .panel-highlight-full{ background: #f8f9ff; border: 2px solid var(--primary); }
   .panel + .panel{ margin-top: 18px; }
   .panel h2{ font-size:15px; letter-spacing:-0.01em; margin:0 0 4px; font-weight:700; }
   .panel .sub{ font-size:12.5px; color:var(--ink-soft); margin:0 0 20px; }
@@ -339,7 +341,7 @@
   <!-- ================= TAB: ATENDIMENTO ================= -->
   <div class="tab-panel active" id="tab-atendimento">
     <div class="grid-main">
-      <div class="panel">
+      <div class="panel panel-highlight-full">
         <h2>Novo atendimento</h2>
         <p class="sub">Preencha ao final de cada atendimento.</p>
 
@@ -523,12 +525,14 @@
   <!-- ================= TAB: CAIXA ================= -->
   <div class="tab-panel" id="tab-caixa">
     <div class="grid-main">
-      <div class="panel">
+      <div class="panel panel-highlight">
         <h2>Fechamento de caixa</h2>
         <p class="sub">Lance o fechamento do dia.</p>
 
         <label for="cxData">Data</label>
         <input type="date" id="cxData">
+        <label for="cxFundoInicial">Fundo Inicial (R$)</label>
+        <input type="text" id="cxFundoInicial" inputmode="decimal" placeholder="R$ 0,00">
         <label for="cxEntrada">Entrada de dinheiro (R$) <span>— automático</span></label>
         <input type="text" id="cxEntrada" inputmode="decimal" readonly>
         <label for="cxSaida">Saída de dinheiro (R$)</label>
@@ -560,7 +564,7 @@
         <div class="chart-box" style="margin-bottom:18px;"><canvas id="chartCaixa"></canvas></div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Gaveta</th><th>Sistema</th><th>Diferença</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Data</th><th>Fundo Inicial</th><th>Entrada</th><th>Saída</th><th>Gaveta</th><th>Sistema</th><th>Diferença</th><th>Status</th><th></th></tr></thead>
             <tbody id="tbodyCaixa"></tbody>
           </table>
         </div>
@@ -1350,11 +1354,13 @@ function recalcCaixaAuto(){
       return s;
     }, 0);
   $('cxEntrada').value = centsToBRL(Math.round(cashSales * 100));
+  const fundoInicial = currencyValue($('cxFundoInicial'));
   const saida = currencyValue($('cxSaida'));
-  const sistema = cashSales - saida;
+  const sistema = fundoInicial + cashSales - saida;
   $('cxSistema').value = centsToBRL(Math.round(sistema * 100));
 }
 $('cxData').addEventListener('change', recalcCaixaAuto);
+$('cxFundoInicial').addEventListener('input', recalcCaixaAuto);
 $('cxSaida').addEventListener('input', recalcCaixaAuto);
 
 let editingCaixaId = null;
@@ -1373,6 +1379,7 @@ function registerCaixa(){
     return;
   }
 
+  const fundoInicial = currencyValue($('cxFundoInicial'));
   const entrada = currencyValue($('cxEntrada'));
   const saida = currencyValue($('cxSaida'));
   const gaveta = currencyValue($('cxGaveta'));
@@ -1381,14 +1388,15 @@ function registerCaixa(){
 
   if (editingCaixaId){
     const entry = caixaEntries.find(c => c.id === editingCaixaId);
-    Object.assign(entry, { data, entrada, saida, gaveta, sistema, obs });
+    Object.assign(entry, { data, fundoInicial, entrada, saida, gaveta, sistema, obs });
     if (window.cloud) window.cloud.saveCaixa(entry);
     showMsg('cxMsg', 'Fechamento atualizado.', true);
     cancelEditCaixa();
   } else {
-    const novoFechamento = { id: cxIdSeq++, data, entrada, saida, gaveta, sistema, obs };
+    const novoFechamento = { id: cxIdSeq++, data, fundoInicial, entrada, saida, gaveta, sistema, obs };
     caixaEntries.unshift(novoFechamento);
     if (window.cloud) window.cloud.saveCaixa(novoFechamento);
+    $('cxFundoInicial').value = centsToBRL(0);
     $('cxSaida').value = centsToBRL(0);
     $('cxGaveta').value = centsToBRL(0);
 
@@ -1403,6 +1411,7 @@ function editCaixa(id){
   if (!entry) return;
   editingCaixaId = id;
   $('cxData').value = entry.data;
+  $('cxFundoInicial').value = centsToBRL((entry.fundoInicial || 0) * 100);
   $('cxSaida').value = centsToBRL(entry.saida * 100);
   $('cxGaveta').value = centsToBRL(entry.gaveta * 100);
 
@@ -1418,6 +1427,7 @@ function cancelEditCaixa(){
   $('cxSubmitBtn').textContent = 'Registrar fechamento';
   $('cxCancelBtn').style.display = 'none';
   $('cxData').value = new Date().toISOString().slice(0,10);
+  $('cxFundoInicial').value = centsToBRL(0);
   $('cxSaida').value = centsToBRL(0);
   $('cxGaveta').value = centsToBRL(0);
   // $('cxObs').value = ''; // Campo removido
@@ -1442,6 +1452,7 @@ function renderCaixa(){
       const okStatus = Math.abs(diff) < 0.005;
       return `<tr>
         <td>${new Date(c.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
+        <td class="val-cell">${fmtMoney(c.fundoInicial || 0)}</td>
         <td class="val-cell">${fmtMoney(c.entrada)}</td>
         <td class="val-cell">${fmtMoney(c.saida)}</td>
         <td class="val-cell">${fmtMoney(c.gaveta)}</td>
@@ -1808,6 +1819,7 @@ async function bootstrap(){
   $('topDate').textContent = now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
 
   attachCurrencyMask($('valor'));
+  attachCurrencyMask($('cxFundoInicial'));
   attachCurrencyMask($('cxSaida'));
   attachCurrencyMask($('cxGaveta'));
   $('cxEntrada').value = centsToBRL(0);
@@ -1986,5 +1998,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+<footer>
+  <p>by Rover | Todos os direitos reservados</p>
+</footer>
 </body>
 </html>
